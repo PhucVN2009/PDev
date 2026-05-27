@@ -1,0 +1,49 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # ðŸ‘ˆ Ã‰p dÃ¹ng Node 24
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx1536m"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install NDK & CMake
+        run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "ndk;25.2.9519653" \
+            "cmake;3.22.1"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --stacktrace --no-daemon
+
+      - name: Upload all APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-imgui
+          path: app/build/outputs/apk/**/*.apk
+          retention-days: 7
