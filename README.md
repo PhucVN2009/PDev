@@ -1,2 +1,1 @@
-# PDev
-UABE AOV - Asset Bundle Extractor for Arena of Valor
+This source is shared for free by PSH MODS.
